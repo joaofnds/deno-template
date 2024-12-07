@@ -1,0 +1,10 @@
+logger:
+  level: fatal
+  http: true
+
+redis:
+  family: 6
+
+pokeAPI:
+  baseURL: https://pokeapi.co/api/v2
+  timeoutMilliseconds: 5000

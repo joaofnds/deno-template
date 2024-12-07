@@ -1,0 +1,14 @@
+logger:
+  level: debug
+  http: false
+
+database:
+  url: postgres://postgres:postgres@localhost:5432/template
+
+redis:
+  url: redis://localhost:6379
+  family: 4
+
+pokeAPI:
+  baseURL: https://pokeapi.co/api/v2
+  timeoutMilliseconds: 5000

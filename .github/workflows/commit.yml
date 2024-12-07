@@ -1,0 +1,54 @@
+name: commit
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "README.md"
+      - "CHANGELOG.md"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  lint-dockerfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.1.0
+
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CONFIG_PATH: src/config/test.yaml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: docker compose up -d &
+      - run: deno install
+      - run: deno lint
+      - run: deno fmt --check
+      - run: deno task migrate up
+      - run: deno task test
+
+  release:
+    needs: [gitleaks, lint-dockerfile, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: joaofnds/semantic-release-action@v1.3.0
+        with:
+          plugins: conventional-changelog-conventionalcommits
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
